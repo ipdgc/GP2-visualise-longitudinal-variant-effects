@@ -6,6 +6,9 @@
 library(here) # For easy construction of file paths
 library(shiny) # For shiny web app functions
 library(shinythemes) # For shiny themes
+library(tidyverse) # For data wrangling
+library(stringr) # For string manipulation
+library(qdapTools) # For list/dataframe manipulation
 library(waiter) # For wait screens
 
 waiting_screen <- 
@@ -16,11 +19,12 @@ waiting_screen <-
 
 #----Load data and functions---------------------------------------
 
-# Data
-
-
 # Functions
 source(here::here("R", "app_functions.R"))
+
+# Data
+data <- 
+  get_toy_data()
 
 #----User interface------------------------------------------------
 
@@ -44,7 +48,7 @@ ui <-
       # Brief description of app
       shiny::tabPanel(
         title = "About",
-        
+  
         # Include logos
         get_logos()
         
@@ -54,6 +58,8 @@ ui <-
       # Main panel with plots
       shiny::tabPanel(
         title = "Plots",
+        
+        dataTableOutput("dynamic"),
         
         # Include logos
         get_logos()
@@ -95,6 +101,9 @@ server <-
     
     # Hide waiting screen upon loading
     waiter::waiter_hide()
+    
+    # Test
+    output$dynamic <- renderDataTable(data, options = list(pageLength = 5))
     
   }
 
