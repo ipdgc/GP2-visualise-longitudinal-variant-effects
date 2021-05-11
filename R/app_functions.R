@@ -136,4 +136,56 @@ get_toy_data <- function(){
   
 }
   
-  
+
+#' Get plots
+#' 
+#' This function will setup the shiny main panel with the cross sectional and 
+#' longitudinal plots
+#' 
+#' @return CS_plot and LT_plot plotOutputs
+#' 
+
+get_plots <- function() {
+  shiny::mainPanel(
+    shiny::tabsetPanel(
+      shiny::tabPanel("Cross Sectional",
+                      shiny::wellPanel(
+                        shiny::verticalLayout(
+                          shiny::plotOutput(outputId="CS_plot"),
+                          shiny::br(),
+                          shiny::downloadButton(outputId="downloadCS_plot",
+                                                label="Download plot")
+                        )
+                      )
+      ),
+      shiny::tabPanel("Longitudinal",
+                      shiny::wellPanel(
+                        shiny::verticalLayout(
+                          shiny::plotOutput(outputId="LT_plot"),
+                          shiny::br(),
+                          shiny::downloadButton(outputId="downloadLT_plot",
+                                                label="Download plot")
+                        )
+                      )
+      ),
+      shiny::tabPanel("Data Table",
+                      shiny::verticalLayout(
+                        shiny::dataTableOutput("dynamic")
+                      )
+                    ),
+      id = "plots"
+    )
+  )
+}
+
+#' Get forest plot
+#'
+#' Placeholder function for plotting the GWAS data n a forest plot
+#' 
+#' @return renders the plot
+#' 
+
+get_forest_plot <- function(x, y) {
+  # plotting code for forest plot goes here
+  plot(x, y)
+}
