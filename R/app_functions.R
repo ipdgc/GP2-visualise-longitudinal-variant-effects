@@ -11,9 +11,9 @@ get_logos <- function(){
     width = 12, 
     shiny::br(),
     shiny::hr(),
-    p(
-      img(src="ipdgc_logo.png", width="20%"), 
-      img(src="gp2_logo.png", width="20%"),
+    shiny::p(
+      shiny::img(src="ipdgc_logo.png", width="20%"), 
+      shiny::img(src="gp2_logo.png", width="20%"),
       align="center"
     )
   )
