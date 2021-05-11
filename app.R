@@ -67,9 +67,9 @@ ui <-
       # Main panel with plots
       shiny::tabPanel(
         title = "Plots",
-
-        dataTableOutput("dynamic"),
-
+        
+        get_plots(),
+        
         # Include logos
         get_logos()
 
@@ -107,13 +107,53 @@ server <-
     output,
     session
   ) {
-
-    # Hide waiting screen upon loading
-    waiter::waiter_hide()
-
+    
+    # ---- Drawing Plots & Other Outputs----------------------------
+    output$CS_plot <- renderPlot({
+      # TODO: current placeholder plotting function, pass in GWAS summary stats 
+      get_forest_plot(1,10)
+    },execOnResize = TRUE)
+    
+    output$LT_plot <- renderPlot({
+      # TODO: current placeholder plotting function, pass in GWAS summary stats
+      get_forest_plot(1,5)
+    },execOnResize = TRUE)
+    
     # Test
     output$dynamic <- renderDataTable(data, options = list(pageLength = 5))
-
+    
+    # ---- Exporting Plots------------------------------------------
+    ### Download LT plot 
+    output$downloadLT_plot <- downloadHandler(
+      filename = function(){
+        # TODO: change input$snp and input$biomarker
+        paste(input$snp, input$biomarker, "ltplot.pdf", sep = "_")
+      },
+      content = function(file){
+        pdf(file)
+        # TODO: current placeholder plotting function, pass in GWAS summary stats
+        #get_forest_plot(1,10)
+        dev.off()
+      }
+    )
+    
+    ### Download CS plot 
+    output$downloadCS_plot <- downloadHandler(
+      filename = function(){
+        # TODO: change input$snp and input$biomarker
+        paste(input$snp, input$biomarker, "csplot.pdf", sep = "_")
+      },
+      content = function(file){
+        pdf(file)
+        # TODO: current placeholder plotting function, pass in GWAS summary stats
+        #get_forest_plot(1,10)
+        dev.off()
+      }
+    )
+    
+    # Hide waiting screen upon loading
+    waiter::waiter_hide()
+    
   }
 
 # Launch app
