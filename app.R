@@ -90,7 +90,8 @@ server <-
   function(
     input, 
     output, 
-    session) {
+    session
+  ) {
     
     # Hide waiting screen upon loading
     waiter::waiter_hide()
