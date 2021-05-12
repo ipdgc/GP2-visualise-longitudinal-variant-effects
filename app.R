@@ -49,8 +49,8 @@ ui <-
       shiny::tabPanel(
         title = "About",
         tags$h2("Welcome to the GP2/IPDGC 2021 Hackathon's Cross Sectional and Longitudinal GWAS Summary Statistics Visualization Tool!"),
-        tags$h3("This application aims to use the results from biomarker Genome Wide Association Studies (GWAS) and enable researchers to query a particular biomarker and obtain a visualization of the of the biomarker effect on all or a set of cohorts, as well as, the associated meta-analysis. The app is also capable of displaying longitudinal information alongside the cross-sectional results."),
-        tags$h5('Project Members:
+        tags$h4("This application aims to use the results from biomarker Genome Wide Association Studies (GWAS) and enable researchers to query a particular biomarker and obtain a visualization of the of the biomarker effect on all or a set of cohorts, as well as, the associated meta-analysis. The app is also capable of displaying longitudinal information alongside the cross-sectional results."),
+        tags$h6('Project Members:
                 Michael Ta
                 - Regina Reynolds
                 - Teresa Periñan
@@ -108,6 +108,9 @@ server <-
     session
   ) {
     
+    # Hide waiting screen upon loading
+    waiter::waiter_hide()
+    
     # ---- Drawing Plots & Other Outputs----------------------------
     output$CS_plot <- renderPlot({
       # TODO: current placeholder plotting function, pass in GWAS summary stats 
@@ -150,9 +153,6 @@ server <-
         dev.off()
       }
     )
-    
-    # Hide waiting screen upon loading
-    waiter::waiter_hide()
     
   }
 
