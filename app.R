@@ -159,14 +159,17 @@ server <-
       )
     })
     
-    # ---- Data query -----------------------------------------
-    filtered_data <-reactive({
-      req(input$SNP)
-      raw_data() %>%
-        group_by(.data$cohort, .data$ID) %>%
-        filter(.data$ID == .env$input$SNP) %>%
-        ungroup()
-    }) 
+    # ---- Data query for toy dataset -----------------------------------------
+    filtered_data <- reactive({
+      req(input$snp)
+      req(input$biomarker)
+      req(input$cohort)
+      df <- data %>%
+        filter(.data$ID == .env$input$snp,
+               .data$biomarker %in% .env$input$biomarker,
+               .data$cohort %in% .env$input$cohort)
+      df
+    })
     # TODO: Add the filtering function on the app_functions.R instead of here.
     # TODO: Make the filtering function more versatile - Allow to filter by biomarker if the user wants to plot by biomarker?
     
@@ -179,16 +182,16 @@ server <-
     # ---- Drawing Plots & Other Outputs----------------------------
     output$CS_plot <- renderPlot({
       # TODO: current placeholder plotting function, pass in GWAS summary stats 
-      get_forest_plot(1,10)
+      # get_forest_plot(1,10)
     },execOnResize = TRUE)
     
     output$LT_plot <- renderPlot({
       # TODO: current placeholder plotting function, pass in GWAS summary stats
-      get_forest_plot(1,5)
+      # get_forest_plot(1,5)
     },execOnResize = TRUE)
     
     # Test
-    output$dynamic <- renderDataTable(data, options = list(pageLength = 5))
+    output$dynamic <- renderDataTable(filtered_data(), options = list(pageLength = 5))
     
     # ---- Exporting Plots------------------------------------------
     ### Download LT plot 
