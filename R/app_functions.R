@@ -204,16 +204,130 @@ get_plots <- function() {
   )
 }
 
-#' Get forest plot
+#' Get forest plot and observations count plot
 #'
-#' Placeholder function for plotting the GWAS data in a forest plot
+#' @description This function will output two plots: (i) a forest plot of betas
+#'   for a biomarker across cohorts and (ii) a bar plot of the number of
+#'   participants/observations (depending on the data type) across each cohort.
 #' 
-#' @return renders the plot
-#' 
+#' @param filtered_data a filtered `data.frame` or
+#'   [tibble][tibble::tbl_df-class] object, with the following columns:
+#'  \itemize{
+#'  \item `cohort`: the study cohort.
+#'  \item `data_type`: the type of data (either cross-sectional or longitudinal.
+#'  Should be one of `c("cs", "lt")`.
+#'  \item `biomarker`: the biomarker studied.
+#'  \item `ID`: SNP in the format chromosome:basepair:reference:alternate.
+#'  \item `BETA`: the beta coefficient
+#'  \item `SE`: the standard error of the beta
+#'  \item `OBS_CT`: the number of participants (if cross-sectional) or total
+#'  observations (if longitudinal).
+#'  }
+#'  The `data.frame`/[tibble][tibble::tbl_df-class] should be filtered to
+#'  include only one `ID` and one type of data (one of `c("cs", "lt")`).
+#'  
+#' @return `ggplot` displaying a forest plot and 
+#'   terms. \itemize{ 
+#'   \item x-axis on the forest plot displays the beta while on the bar plot
+#'   displays the number of particpants/observations.
+#'   \item y-axis on both plots displays the cohort 
+#'   \item dot on the forest plot indicates the beta, while lines indicate the beta +/- the standard error
+#'   }
+#'   
 
-get_forest_plot <- function(x, y) {
-  # plotting code for forest plot goes here
-  plot(x, y)
+get_forest_plot <- function(filtered_data) {
+  
+  # Add if/else
+  if(unique(filtered_data$data_type) == "cs"){
+    
+    xlab_forest <- "Cross-sectional beta (+/- standard error)"
+    xlab_obs <- "Number of participants"
+    
+    
+  } else if(unique(filtered_data$data_type) == "lt"){
+    
+    xlab_forest <- "Longitudinal beta (+/- standard error)"
+    xlab_obs <- "Total number of observations"
+    
+  } else{
+    
+    print("Unrecognised data type (i.e. not cross-sectional, cs, or longitudinal, lt")
+    
+  }
+  
+  # Change cohort and biomarker names to human-readable format
+  plot_data <- 
+    filtered_data %>% 
+    dplyr::mutate(
+      cohort = stringr::str_replace_all(cohort, "_", " "),
+      biomarker = stringr::str_replace_all(biomarker, "_", " ")
+    )
+  
+  # Determine max. observations for later nudging of text
+  max_obs <- max(plot_data$OBS_CT)
+  
+  # Plot forest plot
+  forest_plot <- 
+    plot_data %>% 
+    dplyr::mutate(
+      cohort = stringr::str_replace_all(cohort, "_", " "),
+      biomarker = stringr::str_replace_all(biomarker, "_", " ")
+    ) %>% 
+    ggforestplot::forestplot(
+      name = cohort,
+      estimate = BETA,
+      se = SE,
+      xlab = xlab_forest, 
+      ylab = "Cohort"
+    ) +
+    ggforestplot::theme_forest(base_size = 12) + 
+    ggforce::facet_col(
+      facets = ~biomarker,
+      scales = "free_y",
+      space = "free"
+    )
+  
+  # Plot observations
+  obs_count_plot <-
+    plot_data %>% 
+    ggplot2::ggplot(
+      ggplot2::aes(
+        x = OBS_CT,
+        y = cohort
+      )
+    ) + 
+    ggplot2::geom_col(
+      colour = "black"
+    ) +
+    ggplot2::geom_text(
+      ggplot2::aes(
+        label = OBS_CT, 
+        # Add a tiny bit on to the OBS_CT value to nudge the text
+        x = OBS_CT + max_obs/10
+      )
+    ) +
+    ggplot2::labs(
+      x = xlab_obs
+    ) +
+    ggplot2::theme_classic(base_size = 12) +
+    # ggforestplot::theme_forest(base_size = 12) +
+    ggplot2::theme(
+      axis.text.y = element_blank(),
+      axis.title.y = element_blank()
+    )
+  
+  # Combine plots  
+  combined_plot <-
+    cowplot::plot_grid(
+      forest_plot,
+      obs_count_plot,
+      align = c("h"),
+      axis = "bt", 
+      rel_widths = c(2,1)
+    )
+  
+  return(combined_plot)
+  
 }
 
 #' This function will set up the side panel ui for the user to enter their query parameters
