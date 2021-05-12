@@ -77,7 +77,11 @@ ui <-
       shiny::tabPanel(
         title = "Plots",
         
-        get_plots(),
+        #Sidebar and plot placeholder
+        sidebarLayout(
+          get_sidebar(),
+          get_plots()
+        ),
         
         # Include logos
         get_logos()
@@ -88,6 +92,10 @@ ui <-
       # Provide a description of the cohorts
       shiny::tabPanel(
         title = "Cohorts",
+        tags$h2("Click on the cohort name for further information"),
+        tags$br(),
+        tags$p(tags$a(href="https://amp-pd.org/unified-cohorts/ppmi#inclusion-and-exclusion-criteria", h3(tags$strong("PPMI"),"(Parkinson's Progression Markers Initiative)"))),
+        tags$p(tags$a(href="https://amp-pd.org/unified-cohorts/ppmi#inclusion-and-exclusion-criteria", h3(tags$strong("BioFIND"),"(Fox Investigation for New Discovery of Biomarkers in Parkinson's Disease)"))),
 
         # Include logos
         get_logos()

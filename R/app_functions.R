@@ -206,7 +206,7 @@ get_plots <- function() {
 
 #' Get forest plot
 #'
-#' Placeholder function for plotting the GWAS data n a forest plot
+#' Placeholder function for plotting the GWAS data in a forest plot
 #' 
 #' @return renders the plot
 #' 
@@ -214,4 +214,20 @@ get_plots <- function() {
 get_forest_plot <- function(x, y) {
   # plotting code for forest plot goes here
   plot(x, y)
+}
+
+#' This function will set up the side panel ui for the user to enter their query parameters
+#' 
+#' @return 
+#' 
+
+get_sidebar <- function(){
+  shiny::sidebarPanel(
+    shiny::wellPanel(h3("Enter your query parameters"),
+                     shiny::textInput("snp", h4("Variant"),value = "Search by rs ID or chromosome position"),
+                     shiny::selectInput("biomarker", h4("Biomarker"),data[,3][!duplicated(data[,3])], selected = 0),
+                     shiny::radioButtons("cohort", h4("Cohort"),data[,1][!duplicated(data[,1])],selected = 0),
+    ),
+    shiny::actionButton("go", "Go"),
+  )
 }
