@@ -49,8 +49,8 @@ ui <-
       shiny::tabPanel(
         title = "About",
         tags$h2("Welcome to the GP2/IPDGC 2021 Hackathon's Cross Sectional and Longitudinal GWAS Summary Statistics Visualization Tool!"),
-        tags$h3("This application aims to use the results from biomarker Genome Wide Association Studies (GWAS) and enable researchers to query a particular biomarker and obtain a visualization of the of the biomarker effect on all or a set of cohorts, as well as, the associated meta-analysis. The app is also capable of displaying longitudinal information alongside the cross-sectional results."),
-        tags$h5('Project Members:
+        tags$h4("This application aims to use the results from biomarker Genome Wide Association Studies (GWAS) and enable researchers to query a particular biomarker and obtain a visualization of the of the biomarker effect on all or a set of cohorts, as well as, the associated meta-analysis. The app is also capable of displaying longitudinal information alongside the cross-sectional results."),
+        tags$h6('Project Members:
                 Michael Ta
                 - Regina Reynolds
                 - Teresa Periñan
@@ -61,6 +61,15 @@ ui <-
         # Include logos
         get_logos()
 
+      ),
+      
+      # Filtering the input data
+      shiny::tabPanel(
+        title = "Query",
+        query_interface(),
+        
+        # Include logos
+        get_logos(),
       ),
 
       # Plot panel
@@ -116,6 +125,57 @@ server <-
     session
   ) {
     
+    # Hide waiting screen upon loading
+    waiter::waiter_hide()
+    
+    # ---- Getting the uploaded data-------------------------------
+    
+    raw_data <- reactive({
+      req(input$file)
+      
+      ext <- tools::file_ext(input$file$name)
+      switch(ext,
+             csv = vroom::vroom(input$file$datapath, delim = ","),
+             tsv = vroom::vroom(input$file$datapath, delim = "\t"),
+             txt = vroom::vroom(input$file$datapath, delim = "\t"),
+             validate("Invalid file; Please upload a .csv or .tsv, or .txt file")
+      )
+    })
+    # TODO: Add functionality to load inhouse data
+    
+    # ---- Showing the data as data Table---------------------------
+    output$GWAS <- renderDataTable({
+      raw_data() %>% arrange(.data$P)
+      
+    })
+    
+    # ---- Adding the textInput widget when the action button is used ---------------
+    observeEvent(input$add, {
+      insertUI(
+        selector = "#add",
+        where = "afterEnd",
+        ui = textInput("SNP",
+                       "Insert the SNP you want to query")
+      )
+    })
+    
+    # ---- Data query -----------------------------------------
+    filtered_data <-reactive({
+      req(input$SNP)
+      raw_data() %>%
+        group_by(.data$cohort, .data$ID) %>%
+        filter(.data$ID == .env$input$SNP) %>%
+        ungroup()
+    }) 
+    # TODO: Add the filtering function on the app_functions.R instead of here.
+    # TODO: Make the filtering function more versatile - Allow to filter by biomarker if the user wants to plot by biomarker?
+    
+    
+    ######################################################################
+    #### We must connect the df the data querying and the plotting steps 
+    ####    Right now, we are taking the data from two different sources ##
+    ######################################################################
+    
     # ---- Drawing Plots & Other Outputs----------------------------
     output$CS_plot <- renderPlot({
       # TODO: current placeholder plotting function, pass in GWAS summary stats 
@@ -158,9 +218,6 @@ server <-
         dev.off()
       }
     )
-    
-    # Hide waiting screen upon loading
-    waiter::waiter_hide()
     
   }
 

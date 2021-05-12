@@ -135,6 +135,32 @@ get_toy_data <- function(){
   return(data_df)
   
 }
+
+#' Query interface
+#' 
+#' This function creates the browser to upload the data and the button 
+#' the query by SNP
+#' 
+#' @return browser panel, SNP selection panel
+#' 
+
+query_interface <- function() {
+  shiny::sidebarLayout(
+    shiny::sidebarPanel(
+      shiny::helpText("Please, load your data and then query the SNP you want to visualize its effect"),
+      
+      # To upload the data on the server
+      shiny::fileInput("file", NULL, accept = c(".csv", ".tsv", ".txt")),
+      # To display an action button to query the user SNP
+      shiny::actionButton("add", "Type here to query your SNP")
+      
+    ),
+    shiny::mainPanel(
+      shiny::dataTableOutput("GWAS")
+    )
+  )
+  
+}
   
 
 #' Get plots
@@ -190,7 +216,6 @@ get_forest_plot <- function(x, y) {
   plot(x, y)
 }
 
-
 #' This function will set up the side panel ui for the user to enter their query parameters
 #' 
 #' @return 
@@ -206,9 +231,3 @@ get_sidebar <- function(){
     shiny::actionButton("go", "Go"),
   )
 }
-
-      
-      
-      
-  
-
