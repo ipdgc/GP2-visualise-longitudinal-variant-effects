@@ -345,3 +345,94 @@ get_sidebar <- function(){
     shiny::actionButton("go", "Go"),
   )
 }
+
+#' Convert CHR:BP locations to rs ids.
+#'
+#' @description Function will convert genomic co-ordinates to rs ids.
+#'
+#' @section Warning:
+#' \itemize{
+#'   \item Some CHR:BP locations have more than one
+#'   associated rs id, thus some filtering for duplicates may have to occur
+#'   after conversion. We leave this to the user to decide how they wish to
+#'   filter.
+#'   \item Some CHR:BP locations may not have an associated rs id --
+#'   these will be represented by NA in the SNP column after conversion.
+#'   }
+#'
+#' @param df `data.frame` or [tibble][tibble::tbl_df-class] object, containing
+#'   SNPs as genomic locations. Must contain 2 columns labelled \code{CHR} and
+#'   \code{BP}, with chromosome and base pair positions, respectively. If the
+#'   dataframe contains additional columns included these will be preserved.
+#' @param dbSNP BS genome reference snps (choose appropriate dbSNP build
+#'   dependent on genome build).
+#'   
+#' @source Function was modified from `colochelpR`:
+#'   \url{https://github.com/RHReynolds/colochelpR/blob/master/R/convert_rs_to_loc.R}
+#'
+#' @return `data.frame` with rs ids and CHR:BP locations.
+#' @export
+#'
+
+convert_loc_to_rs <- function(data, dbSNP){
+  
+  data$CHR <-
+    unlist(
+      lapply(
+        strsplit(as.character(data$ID), ":"), 
+        '[[', 
+        1
+      )
+    )
+  data$BP <- 
+    unlist(
+      lapply(
+        strsplit(as.character(data$ID), ":"), 
+        '[[', 
+        2
+      )
+    )
+  
+  # If df CHR column has "chr" in name, remove
+  if(stringr::str_detect(data$CHR[1], "chr")){
+    
+    data <-
+      data %>%
+      dplyr::mutate(CHR = stringr::str_replace(CHR, "chr", ""))
+    
+  }
+  
+  # If columns CHR are not correct format, this can cause problems with later join
+  data <-
+    data %>%
+    dplyr::mutate(CHR = as.factor(CHR),
+                  BP = as.integer(BP))
+  
+  # Convert df to GRanges object
+  data_gr <-
+    GenomicRanges::makeGRangesFromDataFrame(data,
+                                            keep.extra.columns = FALSE,
+                                            ignore.strand = TRUE,
+                                            seqinfo = NULL,
+                                            seqnames.field = "CHR",
+                                            start.field = "BP",
+                                            end.field = "BP",
+                                            starts.in.df.are.0based = FALSE)
+  
+  # Genomic position object as dataframe with SNP locations converted to RS id.
+  data_gr <-
+    BSgenome::snpsByOverlaps(dbSNP, data_gr, minoverlap = 1L) %>%
+    # Note that the default value for minoverlap is 0 which means that, by default, in addition to the SNPs that are
+    # located within the genomic regions specified thru the ranges argument, snpsByOverlaps also returns SNPs that are
+    # adjacent to these regions. Use minoverlap=1L to omit these SNPs.
+    as.data.frame()
+  
+  combined <-
+    data_gr %>%
+    dplyr::rename(SNP = RefSNP_id, CHR = seqnames, BP = pos) %>%
+    dplyr::right_join(data, by = c("CHR", "BP")) %>%
+    dplyr::select(-strand, -alleles_as_ambig)
+  
+  return(combined)
+  
+}
