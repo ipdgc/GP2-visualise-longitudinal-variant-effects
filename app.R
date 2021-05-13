@@ -48,37 +48,50 @@ ui <-
       # Brief description of app
       shiny::tabPanel(
         title = "About",
-        tags$h2("Welcome to the GP2/IPDGC 2021 Hackathon's Cross Sectional and Longitudinal GWAS Summary Statistics Visualization Tool!"),
-        tags$h4("This application aims to use the results from biomarker Genome Wide Association Studies (GWAS) and enable researchers to query a particular biomarker and obtain a visualization of the of the biomarker effect on all or a set of cohorts, as well as, the associated meta-analysis. The app is also capable of displaying longitudinal information alongside the cross-sectional results."),
-        tags$h6('Project Members:
+        
+        shiny::fluidRow(
+          shiny::column(
+            width = 12, 
+            shiny::wellPanel(
+              shiny::h4(shiny::strong("Welcome to the GP2/IPDGC 2021 Hackathon's Cross Sectional and Longitudinal GWAS Summary Statistics Visualization Tool!")), 
+              shiny::br(),
+              shiny::h4("This application aims to use the results from biomarker Genome Wide Association Studies (GWAS) and enable researchers to query a particular biomarker and obtain a visualization of the of the biomarker effect on all or a set of cohorts, as well as, the associated meta-analysis. The app is also capable of displaying longitudinal information alongside the cross-sectional results."), 
+              shiny::br(),
+              shiny::h6("Project Members:
                 Michael Ta
                 - Regina Reynolds
                 - Teresa Periñan
                 - Alejandro Carrasco
                 - Clodagh Towns
-                - Nikita Pillay'),
-                
-        # Include logos
-        get_logos()
+                - Nikita Pillay", 
+                        align="center")
+            ), # well panel
+            # Include logos
+            get_logos(),
+            shiny::hr()
+          )
+        )
 
       ),
       
       # Filtering the input data
       shiny::tabPanel(
-        title = "Query",
-        query_interface(),
+        title = "Upload data",
+        
+        get_upload_interface(),
         
         # Include logos
-        get_logos(),
-      ),
+        get_logos()
+      
+        ),
 
       # Plot panel
       # Main panel with plots
       shiny::tabPanel(
         title = "Plots",
         
-        #Sidebar and plot placeholder
-        sidebarLayout(
+        # Sidebar and plot panels
+        shiny::sidebarLayout(
           get_sidebar(),
           get_plots()
         ),
@@ -92,10 +105,24 @@ ui <-
       # Provide a description of the cohorts
       shiny::tabPanel(
         title = "Cohorts",
-        tags$h2("Click on the cohort name for further information"),
-        tags$br(),
-        tags$p(tags$a(href="https://amp-pd.org/unified-cohorts/ppmi#inclusion-and-exclusion-criteria", h3(tags$strong("PPMI"),"(Parkinson's Progression Markers Initiative)"))),
-        tags$p(tags$a(href="https://amp-pd.org/unified-cohorts/ppmi#inclusion-and-exclusion-criteria", h3(tags$strong("BioFIND"),"(Fox Investigation for New Discovery of Biomarkers in Parkinson's Disease)"))),
+        
+        shiny::wellPanel(
+          
+          shiny::h4("Click on the cohort name for further information"),
+          shiny::br(),
+          shiny::p(
+            shiny::a(href="https://amp-pd.org/unified-cohorts/ppmi#inclusion-and-exclusion-criteria", 
+                     shiny::h4(
+                       shiny::strong("PPMI"),"(Parkinson's Progression Markers Initiative)")
+            )
+          ),
+          shiny::p(
+            shiny::a(href="https://amp-pd.org/unified-cohorts/ppmi#inclusion-and-exclusion-criteria", 
+                     shiny::h4(
+                       shiny::strong("BioFIND"),"(Fox Investigation for New Discovery of Biomarkers in Parkinson's Disease)"))
+          )
+          
+        ),
 
         # Include logos
         get_logos()
@@ -105,9 +132,13 @@ ui <-
       # Contact panel
       shiny::tabPanel(
         title = "Contact",
-
-        # Include logos
-        get_logos()
+        
+        shiny::wellPanel(
+          
+          # Include logos
+          get_logos()
+          
+        )
 
       )
 
@@ -144,10 +175,12 @@ server <-
     # TODO: Add functionality to load inhouse data
     
     # ---- Showing the data as data Table---------------------------
-    output$GWAS <- renderDataTable({
-      raw_data() %>% arrange(.data$P)
-      
-    })
+    output$GWAS <- 
+      shiny::renderDataTable({
+        
+        raw_data() %>% arrange(.data$P)
+        
+      })
 
     
     # ---- Define Event Observers -----------------------------------------
@@ -155,8 +188,8 @@ server <-
     # event listeners will trigger reactive functions
     
     # ---- Adding the textInput widget when the action button is used ---------------
-    observeEvent(input$add, {
-      insertUI(
+    shiny::observeEvent(input$add, {
+      shiny::insertUI(
         selector = "#add",
         where = "afterEnd",
         ui = textInput("SNP",
@@ -164,11 +197,11 @@ server <-
       )
     })
     
-    observeEvent(input$snp, {
+    shiny::observeEvent(input$snp, {
       hide_tabs()
     })
     
-    observeEvent(input$biomarker, {
+    shiny::observeEvent(input$biomarker, {
       hide_tabs()
     })
     
@@ -196,79 +229,78 @@ server <-
     })
     # TODO: Add the filtering function on the app_functions.R instead of here.
     # TODO: Make the filtering function more versatile - Allow to filter by biomarker if the user wants to plot by biomarker?
-    # TODO: Add cohort filtering - for selection check boxes for some reason the table breaks when
-    #       cohort is included
+    # TODO: Add cohort filtering - for selection check boxes for some reason the table breaks when cohort is included
     
     hide_tabs <- reactive({
       req(input$biomarker)
       df <- filtered_data() # grab the filtered data
       if (nrow(df) < 1) {
-        hideTab(inputId="plots", target="Longitudinal")
-        hideTab(inputId="plots", target="Cross Sectional")
+        shiny::hideTab(inputId="plots", target="Longitudinal")
+        shiny::hideTab(inputId="plots", target="Cross Sectional")
       } else {
         if (has_data_type(df, 'lt')) {
-          showTab(inputId="plots", target="Longitudinal")
+          shiny::showTab(inputId="plots", target="Longitudinal")
         }
         if (has_data_type(df, 'cs')) {
-          showTab(inputId="plots", target="Cross Sectional")
+          shiny::showTab(inputId="plots", target="Cross Sectional")
         }
   
         if ((input$snp == "Search by rs ID or chromosome position") || (input$snp == "")) {
-          hideTab(inputId="plots", target="Longitudinal")
-          hideTab(inputId="plots", target="Cross Sectional")
+          shiny::hideTab(inputId="plots", target="Longitudinal")
+          shiny::hideTab(inputId="plots", target="Cross Sectional")
         }
       }
     })
     
-    ######################################################################
-    #### We must connect the df the data querying and the plotting steps 
-    ####    Right now, we are taking the data from two different sources ##
-    ######################################################################
-    
     # ---- Drawing Plots & Other Outputs----------------------------
-    output$CS_plot <- renderPlot({
-      # TODO: current placeholder plotting function, pass in GWAS summary stats 
-      get_forest_plot(filtered_data() %>% filter(data_type == 'cs'))
-    },execOnResize = TRUE)
+    output$CS_plot <- 
+      shiny::renderPlot({
+        get_forest_plot(filtered_data() %>% filter(data_type == 'cs'))
+      },
+      execOnResize = TRUE
+      )
     
-    output$LT_plot <- renderPlot({
-      # TODO: current placeholder plotting function, pass in GWAS summary stats
-      get_forest_plot(filtered_data() %>% filter(data_type == 'lt'))
-    },execOnResize = TRUE)
+    output$LT_plot <- 
+      shiny::renderPlot({
+        get_forest_plot(filtered_data() %>% filter(data_type == 'lt'))
+      },
+      execOnResize = TRUE
+      )
     
-    # Test
     output$dynamic <- renderDataTable(filtered_data(), options = list(pageLength = 5))
     
     # ---- Exporting Plots------------------------------------------
     ### Download LT plot 
-    output$downloadLT_plot <- downloadHandler(
-      filename = function(){
-        # TODO: change input$snp and input$biomarker
-        paste(input$snp, input$biomarker, "ltplot.pdf", sep = "_")
-      },
-      content = function(file){
-        pdf(file)
-        # TODO: current placeholder plotting function, pass in GWAS summary stats
-        #get_forest_plot(1,10)
-        dev.off()
-      }
-    )
+    output$downloadLT_plot <- 
+      shiny::downloadHandler(
+        filename = function(){
+          # TODO: change input$snp and input$biomarker
+          paste(input$snp, input$biomarker, "ltplot.pdf", sep = "_")
+        },
+        content = function(file){
+          pdf(file)
+          # TODO: current placeholder plotting function, pass in GWAS summary stats
+          #get_forest_plot(1,10)
+          dev.off()
+        }
+      )
     
     ### Download CS plot 
-    output$downloadCS_plot <- downloadHandler(
-      filename = function(){
-        # TODO: change input$snp and input$biomarker
-        paste(input$snp, input$biomarker, "csplot.pdf", sep = "_")
-      },
-      content = function(file){
-        pdf(file)
-        # TODO: current placeholder plotting function, pass in GWAS summary stats
-        #get_forest_plot(1,10)
-        dev.off()
-      }
-    )
+    output$downloadCS_plot <- 
+      shiny::downloadHandler(
+        filename = function(){
+          # TODO: change input$snp and input$biomarker
+          paste(input$snp, input$biomarker, "csplot.pdf", sep = "_")
+        },
+        content = function(file){
+          pdf(file)
+          # TODO: current placeholder plotting function, pass in GWAS summary stats
+          #get_forest_plot(1,10)
+          dev.off()
+        }
+      )
     
-  }
+  } # end server
 
 # Launch app
 shiny::shinyApp(ui, server)

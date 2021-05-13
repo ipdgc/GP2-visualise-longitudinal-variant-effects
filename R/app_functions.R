@@ -136,7 +136,7 @@ get_toy_data <- function(){
   
 }
 
-#' Query interface
+#' Upload data interface
 #' 
 #' This function creates the browser to upload the data and the button 
 #' the query by SNP
@@ -144,7 +144,7 @@ get_toy_data <- function(){
 #' @return browser panel, SNP selection panel
 #' 
 
-query_interface <- function() {
+get_upload_interface <- function() {
   shiny::sidebarLayout(
     shiny::sidebarPanel(
       shiny::helpText("Please, load your data and then query the SNP you want to visualize its effect"),
