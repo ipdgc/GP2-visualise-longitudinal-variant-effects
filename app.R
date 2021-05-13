@@ -148,6 +148,11 @@ server <-
       raw_data() %>% arrange(.data$P)
       
     })
+
+    
+    # ---- Define Event Observers -----------------------------------------
+    # These sections of code are called whenever the user interacts with the UI
+    # event listeners will trigger reactive functions
     
     # ---- Adding the textInput widget when the action button is used ---------------
     observeEvent(input$add, {
@@ -159,20 +164,61 @@ server <-
       )
     })
     
+    observeEvent(input$snp, {
+      hide_tabs()
+    })
+    
+    observeEvent(input$biomarker, {
+      hide_tabs()
+    })
+    
+    # ---- Define reactive components -----------------------------------------
+    # These sections of code are called whenever the user interacts with the UI
+    # and any changes that we have to make due to user interaction
+    
     # ---- Data query for toy dataset -----------------------------------------
     filtered_data <- reactive({
-      req(input$snp)
       req(input$biomarker)
-      req(input$cohort)
-      df <- data %>%
-        filter(.data$ID == .env$input$snp,
-               .data$biomarker %in% .env$input$biomarker,
-               .data$cohort %in% .env$input$cohort)
+      #req(input$cohort)
+      # create an empty dataframe with the columns we expect and 
+      # we can filter the input$snp query ourselves to either show the complete table
+      # if no query returned or show only the results
+      df <- data.frame(columns=colnames(data))
+      if ((input$snp == "Search by rs ID or chromosome position") || (input$snp == "")) {
+        df <- data
+      } else {
+        df <- data %>%
+          filter(.data$ID == .env$input$snp,
+                 .data$biomarker %in% .env$input$biomarker)
+                 #.data$cohort %in% .env$input$cohort)
+      }
       df
     })
     # TODO: Add the filtering function on the app_functions.R instead of here.
     # TODO: Make the filtering function more versatile - Allow to filter by biomarker if the user wants to plot by biomarker?
+    # TODO: Add cohort filtering - for selection check boxes for some reason the table breaks when
+    #       cohort is included
     
+    hide_tabs <- reactive({
+      req(input$biomarker)
+      df <- filtered_data() # grab the filtered data
+      if (nrow(df) < 1) {
+        hideTab(inputId="plots", target="Longitudinal")
+        hideTab(inputId="plots", target="Cross Sectional")
+      } else {
+        if (has_data_type(df, 'lt')) {
+          showTab(inputId="plots", target="Longitudinal")
+        }
+        if (has_data_type(df, 'cs')) {
+          showTab(inputId="plots", target="Cross Sectional")
+        }
+  
+        if ((input$snp == "Search by rs ID or chromosome position") || (input$snp == "")) {
+          hideTab(inputId="plots", target="Longitudinal")
+          hideTab(inputId="plots", target="Cross Sectional")
+        }
+      }
+    })
     
     ######################################################################
     #### We must connect the df the data querying and the plotting steps 
@@ -182,12 +228,12 @@ server <-
     # ---- Drawing Plots & Other Outputs----------------------------
     output$CS_plot <- renderPlot({
       # TODO: current placeholder plotting function, pass in GWAS summary stats 
-      # get_forest_plot(1,10)
+      get_forest_plot(filtered_data() %>% filter(data_type == 'cs'))
     },execOnResize = TRUE)
     
     output$LT_plot <- renderPlot({
       # TODO: current placeholder plotting function, pass in GWAS summary stats
-      # get_forest_plot(1,5)
+      get_forest_plot(filtered_data() %>% filter(data_type == 'lt'))
     },execOnResize = TRUE)
     
     # Test

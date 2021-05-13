@@ -196,6 +196,7 @@ get_plots <- function() {
       ),
       shiny::tabPanel("Data Table",
                       shiny::verticalLayout(
+                        shiny::br(),
                         shiny::dataTableOutput("dynamic")
                       )
                     ),
@@ -328,6 +329,16 @@ get_forest_plot <- function(filtered_data) {
   
   return(combined_plot)
   
+}
+
+#' Boolean to check whether there are any observations in the filtered df of specificed 
+#' data type
+#' 
+#' @return TRUE if df has dt values, otherwise FALSE
+#' 
+
+has_data_type <- function(df, dt) {
+  nrow(df %>% filter(data_type == dt)) > 0
 }
 
 #' This function will set up the side panel ui for the user to enter their query parameters
