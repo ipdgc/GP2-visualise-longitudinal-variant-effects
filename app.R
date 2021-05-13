@@ -4,7 +4,7 @@
 
 #----Load libraries------------------------------------------------
 library(dplyr) # For data wrangling
-library(ggplpt2) # For ggplots
+library(ggplot2) # For ggplots
 library(ggforestplot) # For forest plot
 library(here) # For easy construction of file paths
 library(shiny) # For shiny web app functions
