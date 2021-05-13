@@ -3,10 +3,12 @@
 # For a guide to R Shiny Apps, see: https://mastering-shiny.org/index.html
 
 #----Load libraries------------------------------------------------
+library(dplyr) # For data wrangling
+library(ggplpt2) # For ggplots
+library(ggforestplot) # For forest plot
 library(here) # For easy construction of file paths
 library(shiny) # For shiny web app functions
 library(shinythemes) # For shiny themes
-library(tidyverse) # For data wrangling
 library(stringr) # For string manipulation
 library(qdapTools) # For list/dataframe manipulation
 library(waiter) # For wait screens
