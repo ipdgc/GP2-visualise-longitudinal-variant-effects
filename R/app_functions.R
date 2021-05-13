@@ -341,20 +341,59 @@ has_data_type <- function(df, dt) {
   nrow(df %>% filter(data_type == dt)) > 0
 }
 
+
+#' Get side bar
+#' 
 #' This function will set up the side panel ui for the user to enter their query parameters
 #' 
-#' @return 
+#' TODO New biomarkers / cohorts will need to be added to biomarker_choices and cohort_selection below when available
+#' - this is the method the vizER app used, but to automate it maybe it's better to just remove the "_" as michael has done above?
+#' - Test1 and Test2 are placeholders to demonstrate selection of multiple biomarkers
+#' - a max number of biomarkers to query can be set below, currently set to three
 #' 
+#' @return 
+#'
 
 get_sidebar <- function(){
+  
+  biomarker_choices <- 
+    c(
+      "CSF Amyloid Beta" =	"log_CSF_Ab"
+    ) %>% 
+    sort()
+  cohort_selection <- 
+    c(
+      "PPMI Parkinson's Patients" = "PPMI_PD", 
+      "PPMI Healthy Controls" = "PPMI_HC"
+    ) %>% 
+    sort()
+  
   shiny::sidebarPanel(
-    shiny::wellPanel(h3("Enter your query parameters"),
-                     shiny::textInput("snp", h4("Variant"),value = "Search by rs ID or chromosome position"),
-                     shiny::selectInput("biomarker", h4("Biomarker"),data[,3][!duplicated(data[,3])], selected = 0),
-                     shiny::radioButtons("cohort", h4("Cohort"),data[,1][!duplicated(data[,1])],selected = 0),
+    shiny::wellPanel(
+      shiny::h3("Enter your query parameters"),
+      shiny::textInput(
+        "snp", 
+        shiny::h4("Variant"),
+        value ="chr22:15226216:GC:G", 
+        placeholder = "Search by rs ID or chromosome position"
+        ),
+      shiny::selectizeInput(
+        inputId = "biomarker", 
+        label = "Biomarker", 
+        choices = biomarker_choices,  
+        multiple = T, 
+        options = list(maxItems = 3), 
+        selected = "log_CSF_Ab"
+        ),
+      shiny::checkboxGroupInput(
+        "cohort", 
+        label = shiny::h4("Cohort"), 
+        choices = cohort_selection, 
+        selected = c("PPMI_HC", "PPMI_PD")),
     ),
     shiny::actionButton("go", "Go"),
   )
+  
 }
 
 #' Convert CHR:BP locations to rs ids.
