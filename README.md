@@ -88,7 +88,7 @@ Longitudinal biomarker data is needed to understand the progression of disease a
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-There is already example data from biomarker GWAS conducted with the PPMI and BioFind cohorts. However you can upload your own GWAS statistics using the upload tab on the app!
+There is already example data from biomarker GWAS conducted with the PPMI cohort. However you can upload your own GWAS statistics using the upload tab on the app!
 
 
 Make sure the necessary packages are installed, they are listed in app.R. All packages except 'ggforestplot' can be installed with `install.packages()`. 'ggforestplot' can be installed like this:
@@ -117,7 +117,6 @@ If you wish to visualize your own variant effects, input data should look like t
 ## Acknowledgments
 
 * [PPMI](https://www.ppmi-info.org/)
-* [BioFind](https://www.michaeljfox.org/data-sets)
 
 
 <!-- MARKDOWN LINKS & IMAGES -->
